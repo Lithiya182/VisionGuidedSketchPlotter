@@ -164,9 +164,82 @@ def create_natural_sketch(output_path: str):
     print(f"Created: {output_path}")
 
 
+def create_complex_logo(output_path: str) -> None:
+    """Create a realistic corporate/engineering robotics badge with filled elements, text, and gradients."""
+    h, w = 600, 600
+    canvas = np.full((h, w, 3), 245, dtype=np.uint8)
+    cx, cy = w // 2, h // 2
+    ink = (25, 25, 25)
+
+    # Subtle radial shading/gradient background typical of a photo/scanned badge
+    y_coords, x_coords = np.ogrid[:h, :w]
+    dist_from_center = np.sqrt((x_coords - cx) ** 2 + (y_coords - cy) ** 2)
+    bg_vignette = np.clip(255 - dist_from_center * 0.05, 235, 255).astype(np.uint8)
+    for c in range(3):
+        canvas[:, :, c] = np.minimum(canvas[:, :, c], bg_vignette)
+
+    # Outer border double circles
+    cv2.circle(canvas, (cx, cy), 260, ink, 6)
+    cv2.circle(canvas, (cx, cy), 245, ink, 2)
+    cv2.circle(canvas, (cx, cy), 170, ink, 3)
+
+    # 12 notched gear teeth along outer ring
+    for i in range(12):
+        angle = i * (2 * math.pi / 12)
+        tx = int(cx + 252 * math.cos(angle))
+        ty = int(cy + 252 * math.sin(angle))
+        cv2.circle(canvas, (tx, ty), 6, ink, -1)
+
+    # Central hexagonal shield
+    pts_hex = []
+    for i in range(6):
+        angle = i * (2 * math.pi / 6) - math.pi / 6
+        pts_hex.append([int(cx + 120 * math.cos(angle)), int(cy + 120 * math.sin(angle))])
+    cv2.polylines(canvas, [np.array(pts_hex, dtype=np.int32)], isClosed=True, color=ink, thickness=4)
+
+    # Bold central gripper icon (solid filled arms)
+    # Left claw
+    claw_l = np.array([
+        [cx - 70, cy - 60],
+        [cx - 40, cy - 80],
+        [cx - 20, cy - 50],
+        [cx - 40, cy - 20],
+        [cx - 70, cy - 30],
+    ], dtype=np.int32)
+    cv2.fillPoly(canvas, [claw_l], ink)
+
+    # Right claw
+    claw_r = np.array([
+        [cx + 70, cy - 60],
+        [cx + 40, cy - 80],
+        [cx + 20, cy - 50],
+        [cx + 40, cy - 20],
+        [cx + 70, cy - 30],
+    ], dtype=np.int32)
+    cv2.fillPoly(canvas, [claw_r], ink)
+
+    # Base cylinder
+    cv2.rectangle(canvas, (cx - 35, cy - 20), (cx + 35, cy + 30), ink, -1)
+    cv2.line(canvas, (cx - 35, cy + 30), (cx, cy + 80), ink, 5)
+    cv2.line(canvas, (cx + 35, cy + 30), (cx, cy + 80), ink, 5)
+
+    # Text lettering "ROBOTICS LAB" in circular banner
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    cv2.putText(canvas, "ROBOTICS", (cx - 110, cy - 195), font, 1.0, ink, 3, cv2.LINE_AA)
+    cv2.putText(canvas, "RESEARCH", (cx - 105, cy + 225), font, 0.9, ink, 3, cv2.LINE_AA)
+
+    # Star emblems
+    cv2.circle(canvas, (cx - 205, cy), 12, ink, -1)
+    cv2.circle(canvas, (cx + 205, cy), 12, ink, -1)
+
+    cv2.imwrite(output_path, canvas)
+    print(f"Created: {output_path}")
+
+
 if __name__ == "__main__":
     out_dir = "data/sample_images"
     os.makedirs(out_dir, exist_ok=True)
     create_robot_sketch(os.path.join(out_dir, "01_robot_arm_sketch.png"))
     create_gear_schematic(os.path.join(out_dir, "02_technical_gears.png"))
     create_natural_sketch(os.path.join(out_dir, "03_natural_sketch.png"))
+    create_complex_logo(os.path.join(out_dir, "04_complex_logo.png"))
