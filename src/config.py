@@ -3,7 +3,7 @@ config.py
 
 Centralized configuration for the Vision-Guided Sketch Plotter.
 Contains robot kinematic parameters, workspace bounds, simulation settings,
-and planning parameters.
+planning parameters, and computer vision extraction settings.
 """
 
 from dataclasses import dataclass
@@ -60,8 +60,26 @@ class PlannerConfig:
     default_branch: str = "positive"
 
 
+@dataclass(frozen=True)
+class VisionConfig:
+    """Computer vision preprocessing, extraction, and simplification settings."""
+    canvas_width: int = 480
+    canvas_height: int = 480
+    blur_kernel_size: int = 5
+    blur_sigma: float = 1.0
+    canny_threshold_low: int = 50
+    canny_threshold_high: int = 150
+    adaptive_thresh_block_size: int = 11
+    adaptive_thresh_c: int = 2
+    min_contour_length_px: float = 12.0
+    min_contour_area_px: float = 10.0
+    simplification_epsilon_px: float = 1.5
+    default_mode: str = "canny"  # "boundary", "canny", or "skeleton"
+
+
 # Default global instances for convenience
 DEFAULT_ROBOT_CONFIG = RobotConfig()
 DEFAULT_WORKSPACE_CONFIG = WorkspaceConfig()
 DEFAULT_SIM_CONFIG = SimConfig()
 DEFAULT_PLANNER_CONFIG = PlannerConfig()
+DEFAULT_VISION_CONFIG = VisionConfig()
