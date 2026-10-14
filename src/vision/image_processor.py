@@ -141,7 +141,9 @@ def point_to_segment_distance(
 
 
 def compute_simplification_deviation(
-    raw_points: np.ndarray, simplified_points: np.ndarray
+    raw_points: np.ndarray,
+    simplified_points: np.ndarray,
+    is_closed: bool = False,
 ) -> Tuple[float, float]:
     """
     Compute maximum and mean perpendicular deviation from raw points to simplified polyline.
@@ -149,6 +151,7 @@ def compute_simplification_deviation(
     Parameters:
         raw_points: (N, 2) array of original curve coordinates.
         simplified_points: (M, 2) array of simplified polygon coordinates.
+        is_closed: If True, include the closing segment between the last and first vertices.
 
     Returns:
         (max_deviation_px, mean_deviation_px)
@@ -162,10 +165,14 @@ def compute_simplification_deviation(
             return float(np.max(dists)), float(np.mean(dists))
         return 0.0, 0.0
 
+    poly = simplified_points
+    if is_closed and not np.array_equal(poly[0], poly[-1]):
+        poly = np.vstack([poly, poly[0]])
+
     segs = [
-        (simplified_points[i][0], simplified_points[i][1],
-         simplified_points[i + 1][0], simplified_points[i + 1][1])
-        for i in range(len(simplified_points) - 1)
+        (poly[i][0], poly[i][1],
+         poly[i + 1][0], poly[i + 1][1])
+        for i in range(len(poly) - 1)
     ]
 
     total_deviation = 0.0
@@ -425,10 +432,14 @@ class ImageProcessor:
             cnt_cv = raw_pts.reshape((-1, 1, 2))
             poly = cv2.approxPolyDP(cnt_cv, epsilon, is_closed).reshape((-1, 2))
 
+            # If contour was closed, ensure polyline also explicitly forms a closed loop
+            if is_closed and len(poly) > 2 and not np.array_equal(poly[0], poly[-1]):
+                poly = np.vstack([poly, poly[0]])
+
             n_sim = len(poly)
             total_simplified_points += n_sim
 
-            max_d, mean_d = compute_simplification_deviation(raw_pts, poly)
+            max_d, mean_d = compute_simplification_deviation(raw_pts, poly, is_closed=is_closed)
             if max_d > max_dev_overall:
                 max_dev_overall = max_d
             weighted_dev_sum += mean_d * n_raw

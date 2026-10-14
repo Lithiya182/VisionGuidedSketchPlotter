@@ -173,3 +173,26 @@ def test_versioned_json_roundtrip(processor, tmp_path):
         for (ox, oy), (rx, ry) in zip(orig_stroke, reloaded_stroke):
             assert ox == pytest.approx(rx, abs=1e-3)
             assert oy == pytest.approx(ry, abs=1e-3)
+
+
+def test_closed_contour_simplification_closing_segment(processor):
+    """
+    Verify that closed contours correctly evaluate the closing segment between
+    the final and initial vertices, avoiding the previous 88px/43px deviation bug.
+    """
+    img = np.full((480, 480), 255, dtype=np.uint8)
+    # Draw a solid 160x160 black square
+    cv2.rectangle(img, (140, 140), (300, 300), 0, -1)
+
+    ir = processor.process_image(img, mode="boundary", epsilon=1.5)
+    stats = ir.metadata.simplification_stats
+
+    # Maximum deviation must be <= epsilon (not 80px!)
+    assert stats.max_deviation_px <= 1.5 + 0.1, (
+        f"Max deviation on closed square is too high: {stats.max_deviation_px} px"
+    )
+    assert stats.mean_deviation_px < 0.5
+
+    # Stroke must form a closed loop (start point == end point)
+    for stroke in ir.strokes:
+        assert stroke[0] == pytest.approx(stroke[-1], abs=1e-3)

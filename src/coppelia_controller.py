@@ -10,6 +10,7 @@ import math
 import time
 from typing import Optional, Tuple
 
+import numpy as np
 from coppeliasim_zmqremoteapi_client import RemoteAPIClient
 from src.config import SimConfig, DEFAULT_SIM_CONFIG
 
@@ -216,3 +217,80 @@ class CoppeliaController:
                 return True
 
         return False
+
+    def create_drawing_object(
+        self,
+        line_width: float = 3.0,
+        color: Tuple[float, float, float] = (0.0, 0.2, 0.8),
+        max_lines: int = 20000,
+    ) -> int:
+        """
+        Create a visible ink drawing object in CoppeliaSim.
+
+        Parameters:
+            line_width: Rendered width of the ink line.
+            color: Normalized RGB tuple in [0.0, 1.0].
+            max_lines: Maximum line segment buffer capacity.
+
+        Returns:
+            Drawing object handle.
+        """
+        self.clear_drawing_object()
+        self.drawing_object_handle = self.sim.addDrawingObject(
+            self.sim.drawing_lines + self.sim.drawing_painttag,
+            line_width,
+            0.0,
+            -1,
+            max_lines,
+            list(color),
+        )
+        return self.drawing_object_handle
+
+    def add_ink_segment(
+        self,
+        p1: Tuple[float, float, float],
+        p2: Tuple[float, float, float],
+        in_meters: bool = False,
+    ) -> None:
+        """
+        Add a visible line segment between 3D points p1 and p2.
+
+        Parameters:
+            p1: Starting (x, y, z) coordinates.
+            p2: Ending (x, y, z) coordinates.
+            in_meters: If False (default), inputs are in centimetres and converted to metres.
+        """
+        if self.drawing_object_handle is None:
+            self.create_drawing_object()
+
+        scale = 1.0 if in_meters else 0.01
+        line_data = [
+            p1[0] * scale, p1[1] * scale, p1[2] * scale,
+            p2[0] * scale, p2[1] * scale, p2[2] * scale,
+        ]
+        self.sim.addDrawingObjectItem(self.drawing_object_handle, line_data)
+
+    def clear_drawing_object(self) -> None:
+        """Remove and reset the visible ink drawing object."""
+        if hasattr(self, "drawing_object_handle") and self.drawing_object_handle is not None:
+            try:
+                self.sim.removeDrawingObject(self.drawing_object_handle)
+            except Exception:
+                pass
+            self.drawing_object_handle = None
+
+    def get_vision_sensor_image(
+        self,
+        camera_path: str = "/TopDownVisionSensor",
+    ) -> np.ndarray:
+        """
+        Capture and return an RGB image from the specified vision sensor.
+
+        Returns:
+            NumPy array of shape (H, W, 3) with uint8 RGB values.
+        """
+        cam = self.sim.getObject(camera_path)
+        img_bytes, [res_x, res_y] = self.sim.getVisionSensorImg(cam)
+        raw_img = np.frombuffer(img_bytes, dtype=np.uint8).reshape((res_y, res_x, 3))
+        # CoppeliaSim stores sensor images bottom-to-top; flip vertically
+        return np.flipud(raw_img)
