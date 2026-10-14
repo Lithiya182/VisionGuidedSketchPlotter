@@ -271,13 +271,16 @@ class CoppeliaController:
         self.sim.addDrawingObjectItem(self.drawing_object_handle, line_data)
 
     def clear_drawing_object(self) -> None:
-        """Remove and reset the visible ink drawing object."""
-        if hasattr(self, "drawing_object_handle") and self.drawing_object_handle is not None:
-            try:
-                self.sim.removeDrawingObject(self.drawing_object_handle)
-            except Exception:
-                pass
-            self.drawing_object_handle = None
+        """Remove and reset all visible ink drawing objects in the scene."""
+        try:
+            self.sim.removeDrawingObject(self.sim.handle_all)
+        except Exception:
+            if hasattr(self, "drawing_object_handle") and self.drawing_object_handle is not None:
+                try:
+                    self.sim.removeDrawingObject(self.drawing_object_handle)
+                except Exception:
+                    pass
+        self.drawing_object_handle = None
 
     def get_vision_sensor_image(
         self,

@@ -106,3 +106,10 @@ DEFAULT_VISION_CONFIG = VisionConfig()
 DEFAULT_CAMERA_CONFIG = CameraConfig()
 DEFAULT_EVAL_CONFIG = EvalConfig()
 
+# Re-export disturbance configuration
+from src.sim.disturbances import (
+    DisturbanceConfig,
+    DISTURBANCE_PRESETS,
+    get_disturbance_preset,
+)
+

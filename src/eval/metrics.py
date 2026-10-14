@@ -503,17 +503,30 @@ def decompose_tracking_errors(
     meas_stroke_endpoints_act = []
 
     if stroke_ids is not None:
-        s_ids = np.asarray(stroke_ids)[down_mask]
-        unique_strokes = sorted(list(set(s_ids)))
-        for s_idx in unique_strokes:
-            mask_s = (s_ids == s_idx)
-            pts_s_plan = plan_down[mask_s]
-            pts_s_meas = meas_down[mask_s]
+        all_s_ids = np.asarray(stroke_ids)
+        if len(all_s_ids) == len(plan):
+            unique_strokes = sorted(list(set(all_s_ids)))
+            for s_idx in unique_strokes:
+                mask_s = (all_s_ids == s_idx)
+                pts_s_plan = plan[mask_s]
+                pts_s_meas = meas[mask_s]
 
-            if s_idx < len(target_strokes_arm) and len(pts_s_plan) >= 2:
-                plan_stroke_endpoints_tgt.append(target_strokes_arm[s_idx])
-                plan_stroke_endpoints_act.append(pts_s_plan)
-                meas_stroke_endpoints_act.append(pts_s_meas)
+                if s_idx < len(target_strokes_arm) and len(pts_s_plan) >= 2:
+                    plan_stroke_endpoints_tgt.append(target_strokes_arm[s_idx])
+                    plan_stroke_endpoints_act.append(pts_s_plan)
+                    meas_stroke_endpoints_act.append(pts_s_meas)
+        else:
+            s_ids = all_s_ids[down_mask] if len(all_s_ids) == len(states) else all_s_ids
+            unique_strokes = sorted(list(set(s_ids)))
+            for s_idx in unique_strokes:
+                mask_s = (s_ids == s_idx)
+                pts_s_plan = plan_down[mask_s]
+                pts_s_meas = meas_down[mask_s]
+
+                if s_idx < len(target_strokes_arm) and len(pts_s_plan) >= 2:
+                    plan_stroke_endpoints_tgt.append(target_strokes_arm[s_idx])
+                    plan_stroke_endpoints_act.append(pts_s_plan)
+                    meas_stroke_endpoints_act.append(pts_s_meas)
 
     plan_endpoint_err = (
         endpoint_errors(plan_stroke_endpoints_tgt, plan_stroke_endpoints_act)
@@ -662,16 +675,21 @@ def extract_ink_mask_from_camera_image(
 def raster_iou(
     mask_target: np.ndarray,
     mask_observed: np.ndarray,
+    tolerance_px: int = 2,
 ) -> Dict[str, float]:
     """
     Calculate raster Intersection-over-Union (IoU), Dice coefficient, Precision, and Recall.
 
+    Supports tolerance-matched IoU by dilating masks with a circular structuring element
+    of radius `tolerance_px` (default 2 pixels ~ 0.47 mm).
+
     Parameters:
         mask_target: Binary mask of target strokes (nonzero = foreground).
         mask_observed: Binary mask of observed drawn strokes.
+        tolerance_px: Morphological dilation radius in pixels for tolerance matching.
 
     Returns:
-        Dictionary with IoU, Dice, Precision, Recall, and pixel counts.
+        Dictionary with headline tolerance IoU, secondary plain IoU, Dice, Precision, and Recall.
     """
     m_tgt = np.asarray(mask_target) > 0
     m_obs = np.asarray(mask_observed) > 0
@@ -679,26 +697,67 @@ def raster_iou(
     if m_tgt.shape != m_obs.shape:
         raise ValueError("Target and observed masks must have matching dimensions.")
 
+    # 1. Plain (exact pixel) overlap
     intersection = int(np.logical_and(m_tgt, m_obs).sum())
     union = int(np.logical_or(m_tgt, m_obs).sum())
     tgt_count = int(m_tgt.sum())
     obs_count = int(m_obs.sum())
 
-    iou = float(intersection / union) if union > 0 else 1.0 if (tgt_count == 0 and obs_count == 0) else 0.0
-    dice = float(2.0 * intersection / (tgt_count + obs_count)) if (tgt_count + obs_count) > 0 else 1.0
-    precision = float(intersection / obs_count) if obs_count > 0 else 0.0
-    recall = float(intersection / tgt_count) if tgt_count > 0 else 0.0
+    plain_iou = float(intersection / union) if union > 0 else 1.0 if (tgt_count == 0 and obs_count == 0) else 0.0
+    plain_dice = float(2.0 * intersection / (tgt_count + obs_count)) if (tgt_count + obs_count) > 0 else 1.0
+    plain_precision = float(intersection / obs_count) if obs_count > 0 else 0.0
+    plain_recall = float(intersection / tgt_count) if tgt_count > 0 else 0.0
+
+    # 2. Tolerance-matched overlap (masks dilated by ~tolerance_px)
+    if tolerance_px > 0 and (tgt_count > 0 or obs_count > 0):
+        k_size = 2 * tolerance_px + 1
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k_size, k_size))
+        d_tgt = cv2.dilate(m_tgt.astype(np.uint8), kernel) > 0
+        d_obs = cv2.dilate(m_obs.astype(np.uint8), kernel) > 0
+
+        tol_intersection = int(np.logical_and(d_tgt, d_obs).sum())
+        tol_union = int(np.logical_or(d_tgt, d_obs).sum())
+        tol_tgt_count = int(d_tgt.sum())
+        tol_obs_count = int(d_obs.sum())
+
+        tol_iou = float(tol_intersection / tol_union) if tol_union > 0 else 1.0
+        tol_dice = float(2.0 * tol_intersection / (tol_tgt_count + tol_obs_count)) if (tol_tgt_count + tol_obs_count) > 0 else 1.0
+        tol_precision = float(tol_intersection / tol_obs_count) if tol_obs_count > 0 else 0.0
+        tol_recall = float(tol_intersection / tol_tgt_count) if tol_tgt_count > 0 else 0.0
+    else:
+        tol_iou = plain_iou
+        tol_dice = plain_dice
+        tol_precision = plain_precision
+        tol_recall = plain_recall
+        tol_intersection = intersection
+        tol_union = union
 
     return {
-        "iou": iou,
-        "iou_pct": iou * 100.0,
-        "dice": dice,
-        "precision": precision,
-        "recall": recall,
+        # Headline tolerance-matched metrics
+        "tolerance_iou": tol_iou,
+        "tolerance_iou_pct": tol_iou * 100.0,
+        "tolerance_dice": tol_dice,
+        "tolerance_precision": tol_precision,
+        "tolerance_recall": tol_recall,
+        "tolerance_px": tolerance_px,
+        # Secondary plain metrics
+        "plain_iou": plain_iou,
+        "plain_iou_pct": plain_iou * 100.0,
+        "plain_dice": plain_dice,
+        "plain_precision": plain_precision,
+        "plain_recall": plain_recall,
+        # Backward-compatible aliases
+        "iou": plain_iou,
+        "iou_pct": plain_iou * 100.0,
+        "dice": plain_dice,
+        "precision": plain_precision,
+        "recall": plain_recall,
         "intersection_pixels": intersection,
         "union_pixels": union,
         "target_pixels": tgt_count,
         "observed_pixels": obs_count,
+        "tolerance_intersection_pixels": tol_intersection,
+        "tolerance_union_pixels": tol_union,
     }
 
 
