@@ -111,6 +111,45 @@ DISTURBANCE_PRESETS: Dict[str, DisturbanceConfig] = {
         noise_std_theta2_deg=0.25,   # 0.25 deg Gaussian jitter
         noise_seed=42,
     ),
+    "offset_only": DisturbanceConfig(
+        enabled=True,
+        name="offset_only",
+        delta_L1_cm=0.15,            # +1.5 mm
+        delta_L2_cm=-0.10,           # -1.0 mm
+        delta_theta1_deg=0.80,       # +0.8 deg
+        delta_theta2_deg=-0.80,      # -0.8 deg
+        backlash_theta1_deg=0.0,
+        backlash_theta2_deg=0.0,
+        noise_std_theta1_deg=0.0,
+        noise_std_theta2_deg=0.0,
+        noise_seed=None,
+    ),
+    "backlash_only": DisturbanceConfig(
+        enabled=True,
+        name="backlash_only",
+        delta_L1_cm=0.0,
+        delta_L2_cm=0.0,
+        delta_theta1_deg=0.0,
+        delta_theta2_deg=0.0,
+        backlash_theta1_deg=0.50,    # 0.50 deg deadband
+        backlash_theta2_deg=0.60,    # 0.60 deg deadband
+        noise_std_theta1_deg=0.0,
+        noise_std_theta2_deg=0.0,
+        noise_seed=None,
+    ),
+    "noise_only": DisturbanceConfig(
+        enabled=True,
+        name="noise_only",
+        delta_L1_cm=0.0,
+        delta_L2_cm=0.0,
+        delta_theta1_deg=0.0,
+        delta_theta2_deg=0.0,
+        backlash_theta1_deg=0.0,
+        backlash_theta2_deg=0.0,
+        noise_std_theta1_deg=0.12,   # 0.12 deg Gaussian jitter
+        noise_std_theta2_deg=0.12,   # 0.12 deg Gaussian jitter
+        noise_seed=42,
+    ),
 }
 
 

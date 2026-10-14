@@ -12,10 +12,23 @@ from src.sim.disturbances import (
     PlantDisturbanceManager,
 )
 
+from src.sim.vision_corrector import (
+    CorrectorConfig,
+    PerStrokeObserver,
+    StrokeMatcher,
+    RunningCorrector,
+    CalibrationPrePass,
+)
+
 __all__ = [
     "DisturbanceConfig",
     "DISTURBANCE_PRESETS",
     "get_disturbance_preset",
     "BacklashModel",
     "PlantDisturbanceManager",
+    "CorrectorConfig",
+    "PerStrokeObserver",
+    "StrokeMatcher",
+    "RunningCorrector",
+    "CalibrationPrePass",
 ]

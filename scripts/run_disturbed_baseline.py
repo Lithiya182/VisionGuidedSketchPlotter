@@ -161,9 +161,9 @@ def execute_disturbed_run(
                 # Command joint targets to plant
                 controller.set_joint_targets(cmd_th1, cmd_th2)
 
-                # Settle in sim
+                # Settle in sim (tolerance_deg=0.25 matches Phase 2 baseline)
                 controller.wait_for_settle(
-                    cmd_th1, cmd_th2, timeout_s=1.5, tolerance_deg=0.35, step_simulation=True
+                    cmd_th1, cmd_th2, timeout_s=1.5, tolerance_deg=0.25, step_simulation=True
                 )
 
                 # Read actual physical state from plant
