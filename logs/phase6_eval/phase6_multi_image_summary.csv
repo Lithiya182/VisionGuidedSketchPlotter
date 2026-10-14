@@ -1,0 +1,10 @@
+Image,Ordering Method,Stroke Count,Pen-Down (cm),Pen-Up (cm),Total Travel (cm),Efficiency (%),Joint Disp Proxy (rad),Joint Reversals,Min |det(J)|,Mean |det(J)|,Solve Time (ms)
+01_robot_arm_sketch,Naive (Baseline),30,23.03,28.1,51.12,45.0,3.57,64,82.49,93.82,2.1
+01_robot_arm_sketch,NN + Reversal,30,23.03,7.73,30.76,74.9,1.09,21,82.49,93.82,101.1
+01_robot_arm_sketch,Kinematic 2-Opt,30,23.03,5.41,28.44,81.0,0.75,17,82.49,93.82,406.5
+02_technical_gears,Naive (Baseline),61,29.85,81.68,111.52,26.8,9.33,107,85.3,94.96,6.2
+02_technical_gears,NN + Reversal,61,29.85,14.27,44.11,67.7,1.89,18,85.3,94.96,719.4
+02_technical_gears,Kinematic 2-Opt,61,29.85,12.28,42.12,70.9,1.63,19,85.3,94.96,4955.5
+03_natural_sketch,Naive (Baseline),38,18.37,46.09,64.46,28.5,5.56,80,84.99,95.08,1.7
+03_natural_sketch,NN + Reversal,38,18.37,14.08,32.44,56.6,2.06,19,84.99,95.08,159.5
+03_natural_sketch,Kinematic 2-Opt,38,18.37,12.86,31.22,58.8,1.77,19,84.99,95.08,1305.6

@@ -97,6 +97,19 @@ class EvalConfig:
     pixel_size_mm: float = 120.0 / 512.0  # 0.234375 mm/px for 12cm FOV at 512x512
 
 
+@dataclass(frozen=True)
+class StrokeOrderConfig:
+    """Configurable multi-objective stroke ordering weights and constraints."""
+    w_cartesian: float = 1.0       # Pen-up Cartesian distance (cm)
+    w_joint: float = 0.5           # Joint-space movement proxy (|d_th1| + |d_th2|) (rad)
+    w_reversal: float = 0.3        # Penalty per joint direction reversal
+    w_singularity: float = 0.05    # Singularity proximity penalty: 1/(|det(J)| + eps)
+    eps_singularity: float = 1e-4  # Epsilon to avoid division by zero
+    branch: str = "positive"       # Elbow branch ("positive" or "negative")
+    enable_reversal: bool = True   # Allow flipping stroke drawing direction (start <-> end)
+    max_2opt_iterations: int = 500 # Maximum 2-opt improvement iterations
+
+
 # Default global instances for convenience
 DEFAULT_ROBOT_CONFIG = RobotConfig()
 DEFAULT_WORKSPACE_CONFIG = WorkspaceConfig()
@@ -105,6 +118,7 @@ DEFAULT_PLANNER_CONFIG = PlannerConfig()
 DEFAULT_VISION_CONFIG = VisionConfig()
 DEFAULT_CAMERA_CONFIG = CameraConfig()
 DEFAULT_EVAL_CONFIG = EvalConfig()
+DEFAULT_STROKE_ORDER_CONFIG = StrokeOrderConfig()
 
 # Re-export disturbance configuration
 from src.sim.disturbances import (

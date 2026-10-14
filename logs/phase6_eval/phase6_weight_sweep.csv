@@ -1,0 +1,5 @@
+Profile,w_cart,w_joint,w_rev,w_sing,Pen-Up (cm),Efficiency (%),Joint Disp (rad),Joint Reversals,Min |det(J)|,Mean |det(J)|
+Cartesian-Heavy,1.0,0.0,0.0,0.0,4.37,84.1,0.56,30,82.49,93.82
+Balanced (Default),1.0,0.5,0.3,0.05,5.41,81.0,0.75,17,82.49,93.82
+Reversal-Minimized,0.5,0.2,1.0,0.05,8.11,73.9,1.12,15,82.49,93.82
+Singularity-Averse,1.0,0.5,0.3,0.2,5.41,81.0,0.75,17,82.49,93.82

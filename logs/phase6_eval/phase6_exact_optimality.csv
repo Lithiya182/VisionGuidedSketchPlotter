@@ -1,0 +1,4 @@
+Instance Size (N),State Space (2^N * N!),Exact DP Cost,Exact DP Pen-Up (cm),Exact DP Time (ms),NN Cost,NN Optimality Gap (%),2-Opt Cost,2-Opt Optimality Gap (%),2-Opt Time (ms)
+4,384,1.435,0.22,1.6,1.435,0.0%,1.435,0.0%,1.0
+6,"46,080",2.715,1.15,9.5,2.715,0.0%,2.715,0.0%,1.2
+8,"10,321,920",1.893,0.36,38.6,2.592,36.9%,2.592,36.9%,3.0
