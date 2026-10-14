@@ -1,13 +1,13 @@
 Seed,Ordering,Control,Reversals,RMSE (mm),Chamfer (mm),Tol-IoU (%),Pen-Up (cm),Exec Time (s)
-42,Naive (Baseline),Open-Loop,64,1.808,0.984,30.9,24.6,5.32
-42,Naive (Baseline),Closed-Loop (CL),64,1.787,0.937,30.84,24.71,4.99
-42,Optimized (2-Opt),Open-Loop,17,2.07,0.933,30.61,5.32,4.37
-42,Optimized (2-Opt),Closed-Loop (CL),17,2.09,0.93,31.05,5.11,4.24
-43,Naive (Baseline),Open-Loop,64,1.832,0.948,31.04,24.69,5.16
-43,Naive (Baseline),Closed-Loop (CL),64,1.845,0.957,32.24,24.29,5.12
-43,Optimized (2-Opt),Open-Loop,17,2.111,0.957,30.73,5.35,4.87
-43,Optimized (2-Opt),Closed-Loop (CL),17,2.111,0.937,31.34,5.0,4.34
-44,Naive (Baseline),Open-Loop,64,1.851,0.954,30.34,24.55,4.82
-44,Naive (Baseline),Closed-Loop (CL),64,1.836,0.917,30.64,24.93,5.13
-44,Optimized (2-Opt),Open-Loop,17,2.101,0.983,30.29,4.93,4.5
-44,Optimized (2-Opt),Closed-Loop (CL),17,2.09,0.938,31.25,5.16,4.63
+42,Naive (Baseline),Open-Loop,64,1.808,0.984,30.9,24.6,4.83
+42,Naive (Baseline),Closed-Loop (CL),64,1.047,0.501,67.55,24.7,4.64
+42,Optimized (2-Opt),Open-Loop,17,2.07,0.933,30.61,5.32,4.51
+42,Optimized (2-Opt),Closed-Loop (CL),17,1.118,0.514,52.27,5.12,4.42
+43,Naive (Baseline),Open-Loop,64,1.832,0.948,31.04,24.69,4.84
+43,Naive (Baseline),Closed-Loop (CL),64,1.001,0.492,68.34,24.33,4.52
+43,Optimized (2-Opt),Open-Loop,17,2.111,0.957,30.73,5.35,3.8
+43,Optimized (2-Opt),Closed-Loop (CL),17,1.071,0.495,54.93,5.0,4.34
+44,Naive (Baseline),Open-Loop,64,1.851,0.954,30.34,24.55,4.77
+44,Naive (Baseline),Closed-Loop (CL),64,1.055,0.523,67.91,24.93,4.95
+44,Optimized (2-Opt),Open-Loop,17,2.101,0.983,30.29,4.93,4.47
+44,Optimized (2-Opt),Closed-Loop (CL),17,1.087,0.529,52.4,5.16,3.13

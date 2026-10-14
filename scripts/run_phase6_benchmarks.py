@@ -411,10 +411,15 @@ def _execute_ordered_simulation(
             baseline_img_bgr = cv2.cvtColor(controller.get_vision_sensor_image(), cv2.COLOR_RGB2BGR)
             calib_strokes = calib_pp.get_pattern_strokes()
             calib_plan = plan_strokes([s.tolist() for s in calib_strokes], branch="positive", spacing_cm=spacing_cm)
+            calib_prev_pos = None
             for pt in calib_plan:
                 c1, c2, _ = disturbance_mgr.transform_plant_command(pt.theta1, pt.theta2)
                 controller.set_joint_targets(c1, c2)
                 controller.wait_for_settle(c1, c2, timeout_s=1.0, tolerance_deg=0.25, step_simulation=True)
+                act_x, act_y, act_z = controller.get_tip_position()
+                if pt.pen_down and calib_prev_pos is not None:
+                    controller.add_ink_segment((calib_prev_pos[0], calib_prev_pos[1], 1.55), (act_x, act_y, 1.55), in_meters=False)
+                calib_prev_pos = (act_x, act_y, act_z)
 
             # Park arm
             park_th1, park_th2 = inverse_kinematics(4.0, 6.5, branch="positive")
