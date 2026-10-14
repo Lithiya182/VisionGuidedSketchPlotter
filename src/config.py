@@ -77,9 +77,32 @@ class VisionConfig:
     default_mode: str = "canny"  # "boundary", "canny", or "skeleton"
 
 
+@dataclass(frozen=True)
+class CameraConfig:
+    """Top-down vision sensor parameters in CoppeliaSim."""
+    camera_path: str = "/TopDownVisionSensor"
+    resolution_x: int = 512
+    resolution_y: int = 512
+    view_size_cm: float = 12.0
+    center_x_cm: float = 7.0
+    center_y_cm: float = 9.5
+    height_z_cm: float = 35.0
+    line_thickness_px: int = 2
+
+
+@dataclass(frozen=True)
+class EvalConfig:
+    """Evaluation metrics configuration."""
+    dt_seconds: float = 0.05
+    pixel_size_mm: float = 120.0 / 512.0  # 0.234375 mm/px for 12cm FOV at 512x512
+
+
 # Default global instances for convenience
 DEFAULT_ROBOT_CONFIG = RobotConfig()
 DEFAULT_WORKSPACE_CONFIG = WorkspaceConfig()
 DEFAULT_SIM_CONFIG = SimConfig()
 DEFAULT_PLANNER_CONFIG = PlannerConfig()
 DEFAULT_VISION_CONFIG = VisionConfig()
+DEFAULT_CAMERA_CONFIG = CameraConfig()
+DEFAULT_EVAL_CONFIG = EvalConfig()
+

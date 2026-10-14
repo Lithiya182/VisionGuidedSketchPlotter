@@ -110,8 +110,8 @@ def setup_scene(save_scene: bool = False):
         sim.setObjectAlias(camera, "TopDownVisionSensor")
 
     sim.setObjectPosition(camera, -1, [center_x_m, center_y_m, camera_z_m])
-    # Optical axis looks down along -Z
-    sim.setObjectOrientation(camera, -1, [math.pi, 0.0, 0.0])
+    # Optical axis looks down along -Z; up in image is +Y world, right in image is +X world
+    sim.setObjectOrientation(camera, -1, [0.0, math.pi, 0.0])
 
     # 6. Audit Table Output
     objects_to_audit = [

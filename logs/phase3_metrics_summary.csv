@@ -1,0 +1,33 @@
+Category,Metric,Value,Unit
+Planning Error,Contour Chamfer (Symmetric),0.1181,mm
+Planning Error,Contour Chamfer (Forward),0.0000,mm
+Planning Error,Contour Chamfer (Backward),0.2361,mm
+Planning Error,Endpoint Error (Mean),0.7919,mm
+Planning Error,Endpoint Error (Max),2.4440,mm
+Execution Error,Trajectory RMSE,0.3178,mm
+Execution Error,Mean Tracking Error,0.3016,mm
+Execution Error,Max Tracking Error,0.7157,mm
+Execution Error,Tracking Std Dev,0.1002,mm
+Execution Error,Execution Chamfer (Sym),0.2971,mm
+Execution Error,Endpoint Error (Mean),0.2992,mm
+Total Tracking Error,Contour Chamfer (Symmetric),0.2278,mm
+Total Tracking Error,Contour Chamfer (Forward),0.0303,mm
+Total Tracking Error,Contour Chamfer (Backward),0.4253,mm
+Total Tracking Error,Endpoint Error (Mean),0.7940,mm
+Vision Sensor,Raster IoU,57.94,%
+Vision Sensor,Dice Coefficient,73.37,%
+Vision Sensor,Precision,74.37,%
+Vision Sensor,Recall,72.40,%
+Vision Sensor,Contour Error (Mean),0.0631,mm
+Vision Sensor,Contour Error (RMSE),0.1270,mm
+Vision Sensor,Contour Error (Max),0.4688,mm
+Vision Sensor,Contour Error (95th%),0.2344,mm
+Vision Sensor,Symmetric Chamfer Distance,0.1118,mm
+Travel & Efficiency,Pen-Down Distance,21.95,cm
+Travel & Efficiency,Pen-Up Distance,26.95,cm
+Travel & Efficiency,Pen Travel Efficiency,44.89,%
+Kinematic Smoothness,RMS Jerk,11266.98,cm/s^3
+Kinematic Smoothness,Acceleration Variance,83282.79,cm/s^2
+Kinematic Smoothness,Dimensionless Jerk,1.27e+10,dimless
+Scene Property,DrawingPaper Non-Respondable,1,boolean
+Scene Property,Ink Sourced from Measured Tip,1,boolean
