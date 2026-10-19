@@ -39,6 +39,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from scripts.setup_scene import setup_scene
+_QUALITY = "std"
 from src.config import (
     DEFAULT_CAMERA_CONFIG,
     DEFAULT_STROKE_ORDER_CONFIG,
@@ -93,14 +94,14 @@ def _load_or_extract_strokes(
 ) -> List[np.ndarray]:
     """Extract strokes from a raw image (or from a pre-saved JSON if it exists)."""
     stem = Path(image_path).stem
-    json_path = f"data/extracted_strokes/{stem}_{mode}.json"
+    json_path = "data/extracted_strokes/%s_%s%s.json" % (stem, mode, "_hq" if _QUALITY == "hq" else "")
 
     if not os.path.exists(json_path):
         print(f"  Extracting strokes ({mode}) from {image_path} ...")
         img = cv2.imread(image_path)
         if img is None:
             raise FileNotFoundError(f"Cannot read image: {image_path}")
-        proc = ImageProcessor(VisionConfig(simplification_epsilon_px=1.5))
+        proc = ImageProcessor(VisionConfig(simplification_epsilon_px=0.75 if _QUALITY == "hq" else 1.5))
         ir = proc.process_image(image_path, mode=mode)
         os.makedirs("data/extracted_strokes", exist_ok=True)
         ir.to_json(json_path)
@@ -395,10 +396,13 @@ def main() -> None:
         "--output-dir", default=OUTPUT_DIR,
         help="Directory to write outputs.",
     )
+    parser.add_argument(
+        "--quality", default="std", choices=["std", "hq"],
+        help="std = benchmark settings; hq = 8.5 cm window, finer detail.")
     args = parser.parse_args()
 
     os.makedirs(args.output_dir, exist_ok=True)
-    image_name = Path(args.image).stem
+    image_name = Path(args.image).stem + ("-hq" if args.quality == "hq" else "")
     run_id = f"{image_name}_{args.mode}_{args.disturbance}_{args.order}_{args.control}_s{args.seed}"
     print(f"\n{'='*80}")
     print(f"DEMO RUN: {run_id}")
@@ -407,6 +411,12 @@ def main() -> None:
     print(f"{'='*80}\n")
 
     wc  = DEFAULT_WORKSPACE_CONFIG
+    sys.modules[__name__]._QUALITY = args.quality
+    if args.quality == "hq":
+        wc = __import__("dataclasses").replace(
+            wc, draw_origin_x=2.75, draw_origin_y=13.75,
+            draw_width_cm=8.5, draw_height_cm=8.5)
+        _run_one.__defaults__ = (0.1,)
     cam = DEFAULT_CAMERA_CONFIG
     cfg = DEFAULT_STROKE_ORDER_CONFIG
 
