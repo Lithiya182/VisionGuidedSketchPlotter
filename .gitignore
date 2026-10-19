@@ -40,3 +40,7 @@ htmlcov/
 .DS_Store
 Thumbs.db
 scratch/
+scratch/
+logs/phase7_invalid/
+logs/phase7_pre_park/
+*.bak

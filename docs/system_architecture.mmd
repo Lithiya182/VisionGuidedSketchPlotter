@@ -1,0 +1,189 @@
+%% Vision-Guided Sketch Plotter - System Architecture Diagram
+%% Generated from code inspection: all source modules, dependencies, and tests examined
+
+mermaid
+%% =============================================================================
+%% Style configuration
+%% =============================================================================
+config
+    diagramBGColor="#ffffff"
+    fontFamily="Helvetica"
+    nodeShape="rectangle"
+
+%% =============================================================================
+%% Color scheme: implemented / simulated / planned
+%% =============================================================================
+classDef implemented fill="#d8f3ff", stroke="#1890ff", stroke-width=2px
+classDef implemented stroke="#1890ff", stroke-width=2px
+classDef simulated fill="#fff4e5",="#ff9800", stroke-width=2px
+classDef planned fill="#e8eaf6",="#9c27b0", stroke-width=2px
+
+%% =============================================================================
+%% LAYER 1: Vision / IR (Input Side)
+%% =============================================================================
+subgraph Vision_IR [Vision / Intermediate Representation Layer
+    direction LR
+    image_input(Image Input
+        : File path or numpy array\n( BGR / RGB grayscale )
+    ) :class implemented:
+    cv_pipeline(Computer Vision Pipeline
+        : Resize-and-pad\nGaussian blur\nThresholding
+    ) :class implemented:
+    contour_extractor(Contour Extraction
+        : Boundary contours\nCanny edges\nSkeletonization
+    ) :class implemented:
+    simplifier(Stroke Simplification
+        : Douglas-Peucker\nDeviation tracking\nCompression stats
+    ) :class implemented:
+    stroke_IR(StrokeIR Output
+        : Versioned metadata\nPixel-space strokes\n480×480 canvas\n(top-left origin, Y down)
+    ) :class implemented:
+]}
+
+%% =============================================================================
+%% LAYER 2: Coordinate Mapping
+%% =============================================================================
+subgraph CoordTransform [Coordinate Mapping Layer
+    direction LR
+    arm_map(Image → Arm Space
+        : image_to_arm_space()\npixel → cm conversion\nY-axis flip\nscale & offset
+    ) :class implemented:
+    workspace_valid(Workspace Validation
+        : validate_workspace_point()\nradial reachability\nsingular configuration avoidance\njoint limit checks
+    ) :class implemented:
+    path_valid(Drawing Path Validation
+        : validate_drawing_path()\npoint-by-point validation\nvalid/rejected grouping
+    ) :class implemented:
+]}
+
+%% =============================================================================
+%% LAYER 3: Kinematics
+%% =============================================================================
+subgraph Kinematics [Forward/Inverse Kinematics Layer
+    direction LR
+    fk(Forward Kinematics
+        : forward_kinematics(theta1, theta2)\n(elbow + end-effector position\nL1, L2 link lengths cm
+    ) :class implemented:
+    ik(Inverse Kinematics
+        : inverse_kinematics(x, y, branch)\njoint angles from target\npositive/negative elbow branch\njoint limit validation
+    ) :class implemented:
+    ik_limits(Joint Limits
+        : THETA1_LIMITS_DEG\nTHETA2_LIMITS_DEG\nprovisional simulation constraints
+    ) :class implemented:
+]}
+
+%% =============================================================================
+%% LAYER 4: Path Planning
+%% =============================================================================
+subgraph PathPlanning [Path Planning Layer
+    direction LR
+    stroke_planner(Stroke Planning
+        : plan_strokes(contours)\nMotionPoint sequence\npen-up/pen-down states\ninterpolated segments
+    ) :class implemented:
+    optimizer(Stroke Order Optimization
+        : order_strokes_nn()\ngreedy nearest-neighbour\nbidirectional reversal
+    ) :class implemented:
+    optimizer_2opt(Kinematics-aware 2-Opt
+        : order_strokes_2opt()\nlocal search with stroke inversion\nnon-increasing cost guarantee
+    ) :class implemented:
+    optimizer_dp(Exact DP Optimizer
+        : order_strokes_exact_dp()\nO(N²2^N) bitmask DP\nN ≤ 12 strokes guaranteed optimal
+    ) :class implemented:
+    transition_cost(Multi-objective Cost
+        : compute_transition_cost()\nw_cartesian + w_joint + w_reversal + w_singularity
+    ) :class implemented:
+    tour_metrics(Tour Evaluation
+        : evaluate_tour_metrics()\npen-down/up distance\njoint displacement\nreversals\nsingularity penalty
+    ) :class implemented:
+]
+
+%% =============================================================================
+%% LINK: Coordinate Mapping → Kinematics
+%% =============================================================================
+coord_to_kin: image_to_arm_space() → inverse_kinematics()
+    :style coord_to_kin stroke-width 2px, stroke-dasharray 5 5, color:#1890ff
+
+%% =============================================================================
+%% LAYER 5: Simulation / Closed-Loop
+%% =============================================================================
+subgraph Simulation [Simulation & Closed-Loop Layer
+    direction LR
+    coppelia_ctrl(CoppeliaSim Controller
+        : RemoteAPIClient\nobject handles\njoint control\nvision sensor capture\ndrawing objects
+    ) :class simulated:
+    plant_manager(Plant Disturbance Manager
+        : DisturbanceConfig\nBacklashModel\nGaussian noise\nscene apply/restore
+    ) :class simulated:
+    vision_corrector(Vision Corrector (Phase 5)
+        : PerStrokeObserver\nStrokeMatcher (ICP)\nRunningCorrector (EMA)\nCalibrationPrePass
+        :uses ONLY TopDownVisionSensor image,\ntarget strokes and nominal model\nmust NOT access get_tip_position,\ndisturbance params, or telemetry
+    ) :class simulated:
+    vision_sensor(Top-Down Vision Sensor
+        : /TopDownVisionSensor\n512×512 orthographic\ncaptures camera image\nY-down, origin top-left
+    ) :class simulated:
+]
+
+%% =============================================================================
+%% CLOSED-LOOP FEEDBACK ARROWS
+%% =============================================================================
+feedback1: Simulation → CoordTransform
+    :style feedback1 stroke-width 2px, stroke-dasharray 2 2, color:#ff9800
+    :arrowhead normal
+
+feedback2: Simulation → Vision_IR
+    :style feedback2 stroke-width 2px, stroke-dasharray 2 2, color:#ff9800
+    :arrowhead normal
+
+feedback3: Vision_IR → CoordTransform
+    :style feedback3 stroke-width 2px, stroke-dasharray 2 2, color:#ff9800
+    :arrowhead normal
+
+%% =============================================================================
+%% LAYER 6: Robot Actuation / Output
+%% =============================================================================
+subgraph Actuation [Robot Actuation & Drawing Output Layer
+    direction LR
+    set_joints(Send Joint Targets
+        : set_joint_targets(theta1, theta2)\nradians to CoppeliaSim\nwait_for_settle(tolerance 0.25 deg)
+    ) :class implemented:
+    draw_output(Drawing Output
+        : add_ink_segment()\nvisible line segments in CoppeliaSim
+    ) :class implemented:
+}
+
+%% =============================================================================
+%% DATA FLOWS (main end-to-end direction)
+%% =============================================================================
+%% Top-level flow: Image Input → ... → Drawing Output
+flow LR
+    Image Input --> Vision_IR : stroke extraction
+    Vision_IR --> CoordTransform : pixel → cm mapping
+    CoordTransform --> Kinematics : arm space coordinates
+    Kinematics --> PathPlanning : target strokes
+    PathPlanning --> Simulation : motion commands
+    Simulation --> Actuation : joint commands
+    Actuation --> Drawing Output : rendered output
+
+    %% Closed loop: Drawing Output → Vision Sensor → Vision Corrector → ...
+    Drawing Output --> vision_sensor : camera capture
+    vision_sensor --> Simulation : image feedback
+    Simulation --> Vision_IR : correction applied
+
+    %% Disturbance path
+    Disturbance Config --> Simulation : plant modifications
+    Simulation --> Actuation : disturbed joint angles
+
+%% =============================================================================
+%% Component grouping annotations
+%% =============================================================================
+note right of Vision_IR : "Outputs pixel-space strokes\n(480×480, top-left origin, Y down)\nCV/IR separation enforced by AST tests"
+note right of CoordTransform : "Maps image pixels to robot\nworkspace coordinates in cm\nY-axis flipped (down → up)"
+note right of Kinematics : "2-DOF planar arm:\nL1 = L2 = 10 cm nominal\nAll angles in radians"
+note right of PathPlanning : "Phase 6: kinematics-aware\nstroke ordering optimization\nATSP with 4 cost components"
+note right of Simulation : "Disturbances act ONLY on simulated plant\nvision corrector may use ONLY camera\nimage, target strokes, nominal model"
+note right of Actuation : "wait_for_settle tolerance 0.25 deg\nnominal baseline RMSE 0.318 mm\nChamfer 0.228 mm"
+
+%% =============================================================================
+%% Planned / Future annotations
+%% =============================================================================
+note left of Simulation : "Phase 5: closed-loop vision correction\nPhase 6: stroke order optimization\nFuture: real hardware actuation\nFuture: adaptive disturbance compensation"

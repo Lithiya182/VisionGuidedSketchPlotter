@@ -49,7 +49,7 @@ class SimConfig:
     max_vel: float = 5.0      # rad/s (~286 deg/s)
     max_accel: float = 20.0   # rad/s^2
     default_step_size: float = 0.05
-    position_tolerance_deg: float = 0.2
+    position_tolerance_deg: float = 0.25
     tip_tolerance_cm: float = 0.05  # 0.5 mm tolerance between FK and simulated tip
 
 

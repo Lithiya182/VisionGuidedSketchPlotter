@@ -234,6 +234,11 @@ def _run_one(
                 })
 
         exec_time = time.time() - t0
+        # Park the arm outside the camera view so it cannot hide ink
+        _pk1, _pk2 = inverse_kinematics(14.0, 0.0, branch="positive")
+        _pc1, _pc2, _ = dist_mgr.transform_plant_command(_pk1, _pk2)
+        ctrl.set_joint_targets(_pc1, _pc2)
+        ctrl.wait_for_settle(_pc1, _pc2, timeout_s=3.0, tolerance_deg=0.25, step_simulation=True)
         cam_rgb = ctrl.get_vision_sensor_image()
         ctrl.clear_drawing_object()
         ctrl.stop_simulation()

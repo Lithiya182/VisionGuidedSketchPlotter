@@ -247,7 +247,13 @@ StrokeOrderConfig(
 
 3. **Virtual top-down camera.** The `TopDownVisionSensor` is an ideal pinhole camera with zero lens distortion, no rolling shutter, no exposure variation, and perfect lighting. Real camera calibration, lens distortion, and illumination variation would degrade ICP matching.
 
-4. **Singularity proximity term inactive in the 6 × 6 cm window.** The drawing window is located entirely in the robot's upper workspace (θ₂ ≈ 30°–90°), where |det(J)| ≫ 0. The singularity penalty w_singularity has negligible effect. It is retained for generality when the window is enlarged or the robot configuration changed.
+4. **Singularity weight has no effect in this window** (min |det J| ~82.5 across profiles, see Phase 6). The drawing window sits in the robot's upper workspace (θ₂ ≈ 30°–90°) where the Jacobian determinant is uniformly large; the singularity penalty w_singularity=0.05 contributes negligibly to the stroke-order cost across all disturbance profiles. |det J| = L1·L2·sin(θ2) = 0 at the park/home pose (θ2 = 0°), and |det J| ~82.5 is the minimum over the actual drawn waypoints in the Phase 6 study. It is retained for generality when the window is enlarged or the robot configuration changed.
+
+**Min |det J| over drawn waypoints per image (Phase 6):**
+- robot_arm_sketch: min=82.49, mean=93.82 (30 strokes)
+- technical_gears: min=85.30, mean=94.96 (61 strokes)
+- natural_sketch: min=84.99, mean=95.08 (38 strokes)
+- complex_logo: not evaluated in Phase 6 (N=101 strokes, computationally tractable only with heuristics).
 
 5. **Heuristic optimality gap at N = 8+.** Kinematic 2-Opt achieves a **36.9% gap** relative to the exact bitmask DP solution at N = 8. For the full sketches (N = 30–101), exact DP is computationally intractable (≥ 10⁴¹ states). The 2-Opt heuristic is the only practical option; the optimality gap on full instances is unknown.
 
@@ -255,4 +261,6 @@ StrokeOrderConfig(
 
 7. **Closed-loop relies on calibration pre-pass, not per-stroke streaming.** The `CL-PrePass` variant uses a one-shot global offset estimate. It cannot adapt to spatially varying or nonlinear distortions across the workspace. Affine correction (`use_affine=True`) is implemented but not used in the headline results due to insufficient ink pixels in short strokes.
 
-8. **No physical effort model.** Joint displacement (radians) is used as a proxy for mechanical effort and motor wear. Actual torque, speed, and motor heating are not modelled.
+8. **Skeleton mode degrades quality on complex images.** The logo image (04_complex_logo) produces 101 noisy strokes in skeleton mode vs 37 (boundary) and 71 (canny) strokes with more total coverage. Skeleton extraction fragments thin structures in high-detail images, inflating stroke count without improving coverage. Boundary or canny modes are recommended for complex/natural images.
+
+9. **No physical effort model.** Joint displacement (radians) is used as a proxy for mechanical effort and motor wear. Actual torque, speed, and motor heating are not modelled.

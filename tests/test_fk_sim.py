@@ -20,8 +20,22 @@ def sim_controller():
     except Exception as exc:
         pytest.skip(f"CoppeliaSim is not running or unreachable: {exc}")
 
-    # Ensure clean initial state
+    # Ensure clean initial state: reset joint positions and link transforms
+    # to nominal baseline so that FK vs sim error starts from a known clean state.
+    # This fixes residue after disturbance restore / scene state carry-over that
+    # previously forced a 0.8 mm boundary tolerance widening.
     controller.stop_simulation()
+    # Reset both joints to zero (fully extended, x≈20 cm, y≈0)
+    controller.set_joint_targets(0.0, 0.0)
+    controller.wait_for_settle(0.0, 0.0, timeout_s=2.0, tolerance_deg=0.25, step_simulation=True)
+    # Restore nominal link transforms in case they were perturbed
+    try:
+        from src.sim.disturbances import PlantDisturbanceManager, DisturbanceConfig
+        pm = PlantDisturbanceManager(DisturbanceConfig(name="none"))
+        pm.restore_nominal_scene(controller.sim)
+    except Exception:
+        pass  # best-effort; if it fails, continue with rest of test
+
     yield controller
     controller.stop_simulation()
     controller.set_stepping(False)
@@ -108,14 +122,12 @@ def test_fk_vs_simulated_tip_sweep(sim_controller, theta1_deg, theta2_deg):
         f"Joint 2 tracking error: {j2_err_deg:.3f}°"
     )
 
-    # At workspace extremes (|θ₁|≥35° and θ₂≥85°, near reach limit), CoppeliaSim's
-    # internal joint solver introduces up to ~0.07 cm numerical precision error.
-    # We use a slightly wider tolerance (0.08 cm = 0.8 mm) for these boundary configs.
-    is_boundary = abs(theta1_deg) >= 35.0 and abs(theta2_deg) >= 85.0
-    tolerance = 0.08 if is_boundary else sim_controller.config.tip_tolerance_cm
-    assert xy_error_cm < tolerance, (
+    # Restored 0.5 mm (0.05 cm) tolerance from Phase 0 baseline.  Scene-reset
+    # added in the fixture eliminates the residue that previously forced a
+    # boundary tolerance widening to 0.8 mm.
+    assert xy_error_cm < sim_controller.config.tip_tolerance_cm, (
         f"FK vs Sim Tip error: {xy_error_cm * 10:.4f} mm "
-        f"(limit: {tolerance * 10:.1f} mm, boundary={is_boundary})"
+        f"(limit: {sim_controller.config.tip_tolerance_cm * 10:.1f} mm)"
     )
 
 
@@ -148,12 +160,11 @@ def test_ik_to_simulated_tip_cartesian(sim_controller, target_x, target_y):
     sim_x, sim_y = sim_controller.get_tip_xy_cm()
     cartesian_error_cm = math.hypot(sim_x - target_x, sim_y - target_y)
 
-    # At large radii (r >= 13.5 cm), CoppeliaSim introduces up to ~0.07 cm numerical
-    # precision error. Use a slightly wider tolerance (0.08 cm = 0.8 mm) for these cases.
-    radius = math.hypot(target_x, target_y)
-    tolerance = 0.08 if radius >= 13.5 else sim_controller.config.tip_tolerance_cm
-    assert cartesian_error_cm < tolerance, (
+    # Restored 0.5 mm (0.05 cm) tolerance from Phase 0 baseline.  Scene-reset
+    # in the fixture eliminates the residue that previously forced a
+    # radius-dependent tolerance widening.
+    assert cartesian_error_cm < sim_controller.config.tip_tolerance_cm, (
         f"Simulated tip ({sim_x:.2f}, {sim_y:.2f}) did not reach "
         f"target ({target_x:.2f}, {target_y:.2f}), error: {cartesian_error_cm * 10:.4f} mm "
-        f"(limit: {tolerance * 10:.1f} mm, r={radius:.2f} cm)"
+        f"(limit: {sim_controller.config.tip_tolerance_cm * 10:.1f} mm)"
     )
