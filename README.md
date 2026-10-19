@@ -247,7 +247,7 @@ StrokeOrderConfig(
 
 3. **Virtual top-down camera.** The `TopDownVisionSensor` is an ideal pinhole camera with zero lens distortion, no rolling shutter, no exposure variation, and perfect lighting. Real camera calibration, lens distortion, and illumination variation would degrade ICP matching.
 
-4. **Singularity weight has no effect in this window** (min |det J| ~82.5 across profiles, see Phase 6). The drawing window sits in the robot's upper workspace (θ₂ ≈ 30°–90°) where the Jacobian determinant is uniformly large; the singularity penalty w_singularity=0.05 contributes negligibly to the stroke-order cost across all disturbance profiles. |det J| = L1·L2·sin(θ2) = 0 at the park/home pose (θ2 = 0°), and |det J| ~82.5 is the minimum over the actual drawn waypoints in the Phase 6 study. It is retained for generality when the window is enlarged or the robot configuration changed.
+4. **Singularity weight has no effect in this window** (min |det J| ~82.5 across profiles, see Phase 6). The drawing window sits in the robot's upper workspace (θ₂ ≈ 74°–135°) where the Jacobian determinant is uniformly large; the singularity penalty w_singularity=0.05 contributes negligibly to the stroke-order cost across all disturbance profiles. |det J| = L1·L2·sin(θ2) = 0 at the park/home pose (θ2 = 0°), and |det J| ~82.5 is the minimum over the actual drawn waypoints in the Phase 6 study. It is retained for generality when the window is enlarged or the robot configuration changed.
 
 **Min |det J| over drawn waypoints per image (Phase 6):**
 - robot_arm_sketch: min=82.49, mean=93.82 (30 strokes)
