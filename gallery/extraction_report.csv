@@ -1,0 +1,13 @@
+image,mode,strokes,points,valid_in_workspace,usable
+01_robot_arm_sketch.png,skeleton,30,90,30,yes
+01_robot_arm_sketch.png,canny,18,279,18,yes
+01_robot_arm_sketch.png,boundary,9,139,9,yes
+02_technical_gears.png,skeleton,61,225,61,yes
+02_technical_gears.png,canny,60,746,60,yes
+02_technical_gears.png,boundary,16,309,16,yes
+03_natural_sketch.png,skeleton,38,143,38,yes
+03_natural_sketch.png,canny,28,487,28,yes
+03_natural_sketch.png,boundary,15,233,15,yes
+04_complex_logo.png,skeleton,101,358,101,no
+04_complex_logo.png,canny,71,1064,71,yes
+04_complex_logo.png,boundary,37,513,37,yes
