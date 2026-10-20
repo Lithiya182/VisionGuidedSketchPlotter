@@ -96,7 +96,7 @@ def _load_or_extract_strokes(
     stem = Path(image_path).stem
     json_path = "data/extracted_strokes/%s_%s%s.json" % (stem, mode, "_hq" if _QUALITY == "hq" else "")
 
-    if not os.path.exists(json_path):
+    if (not os.path.exists(json_path)) or os.path.getmtime(image_path) > os.path.getmtime(json_path):
         print(f"  Extracting strokes ({mode}) from {image_path} ...")
         img = cv2.imread(image_path)
         if img is None:
