@@ -1,0 +1,3 @@
+mode,rmse_mm,chamfer_mm,tol_iou_pct,plain_iou_pct,endpoint_error_mm,pen_up_dist_cm,exec_time_s
+open_loop,2.0015,0.4446,48.5792,23.5646,1.8342,44.3967,67.8627
+closed_loop_prepass,0.9501,0.1317,75.5011,47.0924,0.9048,44.1454,67.6957
