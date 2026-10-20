@@ -1,0 +1,40 @@
+{
+  "M": [
+    [
+      42.56953885157903,
+      -0.535341203212738
+    ],
+    [
+      0.29621911545594537,
+      -43.291115217531726
+    ]
+  ],
+  "shifts": {
+    "moderate|std": [
+      -0.16539819116713766,
+      -0.06075545224347981
+    ]
+  },
+  "history": [
+    {
+      "image": "01_robot_arm_sketch.png",
+      "mode": "skeleton",
+      "key": "moderate|std",
+      "warm_start": false,
+      "iou_before": 34.2198074540082,
+      "iou_after": 69.0516005733397,
+      "dist_before": 0.620207667350769,
+      "dist_after": 0.14494159817695618
+    },
+    {
+      "image": "02_technical_gears.png",
+      "mode": "skeleton",
+      "key": "moderate|std",
+      "warm_start": true,
+      "iou_before": 27.142956618619873,
+      "iou_after": 68.96068727238772,
+      "dist_before": 0.7569046020507812,
+      "dist_after": 0.15841707587242126
+    }
+  ]
+}
