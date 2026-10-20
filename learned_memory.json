@@ -13,6 +13,10 @@
     "moderate|std": [
       -0.16539819116713766,
       -0.06075545224347981
+    ],
+    "moderate|hq": [
+      -0.1601561285084901,
+      -0.05190080128351869
     ]
   },
   "history": [
@@ -35,6 +39,16 @@
       "iou_after": 68.96068727238772,
       "dist_before": 0.7569046020507812,
       "dist_after": 0.15841707587242126
+    },
+    {
+      "image": "OIP_lineC.png",
+      "mode": "skeleton",
+      "key": "moderate|hq",
+      "warm_start": false,
+      "iou_before": 27.793774852598382,
+      "iou_after": 61.22589769238729,
+      "dist_before": 0.7595545649528503,
+      "dist_after": 0.21114161610603333
     }
   ]
 }
