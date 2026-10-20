@@ -40,6 +40,7 @@ import numpy as np
 
 from scripts.setup_scene import setup_scene
 _QUALITY = "std"
+_INK = float(os.environ.get("SKETCH_INK", "3.5"))
 from src.config import (
     DEFAULT_CAMERA_CONFIG,
     DEFAULT_STROKE_ORDER_CONFIG,
@@ -160,7 +161,7 @@ def _run_one(
     with dist_mgr.active_context(ctrl.sim):
         ctrl.start_simulation()
         ctrl.clear_drawing_object()
-        ctrl.create_drawing_object(line_width=3.5, color=(0.05, 0.15, 0.70))
+        ctrl.create_drawing_object(line_width=_INK, color=(0.05, 0.15, 0.70))
         ctrl.step()
 
         baseline_bgr = cv2.cvtColor(ctrl.get_vision_sensor_image(), cv2.COLOR_RGB2BGR)
@@ -195,7 +196,7 @@ def _run_one(
                 print("    [CalibPrePass] offset undetected (using zero).")
 
             ctrl.clear_drawing_object()
-            ctrl.create_drawing_object(line_width=3.5, color=(0.05, 0.15, 0.70))
+            ctrl.create_drawing_object(line_width=_INK, color=(0.05, 0.15, 0.70))
             ctrl.step()
 
         # Main drawing
