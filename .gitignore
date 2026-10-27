@@ -1,46 +1,13 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# Virtual environments
 .venv/
 venv/
-ENV/
-env/
-
-# Testing & caches
+__pycache__/
+*.py[cod]
 .pytest_cache/
-.coverage
-htmlcov/
-
-# IDE & OS
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
+.mypy_cache/
+.ruff_cache/
+.env
+.env.*
+!.env.example
+*.log
 .DS_Store
 Thumbs.db
-scratch/
-scratch/
-logs/phase7_invalid/
-logs/phase7_pre_park/
-*.bak
